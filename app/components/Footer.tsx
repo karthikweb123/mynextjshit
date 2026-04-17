@@ -1,8 +1,43 @@
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Send } from 'lucide-react';
+import { ChevronRight, Send, Loader2 } from 'lucide-react';
 import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa';
 
 export default function Footer() {
+  // 1. Form State
+  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  // 2. Submit Handler
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+
+    try {
+      // Replace the URL with your actual hosted PHP script path
+      const response = await fetch('https://sheetalsolutions.in/send-email.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '' }); // Reset form
+        setTimeout(() => setStatus('idle'), 5000); // Reset status after 5s
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      setStatus('error');
+    }
+  };
+
   return (
     <footer 
       id="footer" 
@@ -29,7 +64,6 @@ export default function Footer() {
                 />
               </div>
               <div className="flex gap-2 mt-3">
-                {/* Updated Icon Array using react-icons */}
                 {[
                   { Icon: FaTwitter, href: "#" },
                   { Icon: FaFacebook, href: "#" },
@@ -76,12 +110,44 @@ export default function Footer() {
             {/* 4. Contact Form */}
             <div className="lg:col-span-4">
               <h4 className="text-base font-semibold mb-3">Drop Us A Line</h4>
-              <form className="mt-7 space-y-4">
-                <input type="text" placeholder="Name" className="w-full bg-white/10 border border-white/20 p-2 rounded outline-none focus:border-[#428bca]" required />
-                <input type="email" placeholder="Email" className="w-full bg-white/10 border border-white/20 p-2 rounded outline-none focus:border-[#428bca]" required />
-                <button type="submit" className="w-full bg-[#428bca] hover:bg-[#5295ce] py-2 rounded flex items-center justify-center gap-2 transition-colors">
-                  SEND MESSAGE <Send size={16} />
+              <form onSubmit={handleSubmit} className="mt-7 space-y-4">
+                <input 
+                  type="text" 
+                  placeholder="Name" 
+                  className="w-full bg-white/10 border border-white/20 p-2 rounded outline-none focus:border-[#428bca] transition-all"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required 
+                  disabled={status === 'loading'}
+                />
+                <input 
+                  type="email" 
+                  placeholder="Email" 
+                  className="w-full bg-white/10 border border-white/20 p-2 rounded outline-none focus:border-[#428bca] transition-all"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  required 
+                  disabled={status === 'loading'}
+                />
+                <button 
+                  type="submit" 
+                  disabled={status === 'loading'}
+                  className="w-full bg-[#428bca] hover:bg-[#5295ce] py-2 rounded flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                >
+                  {status === 'loading' ? (
+                    <><Loader2 className="animate-spin" size={16} /> SENDING...</>
+                  ) : (
+                    <>SEND MESSAGE <Send size={16} /></>
+                  )}
                 </button>
+
+                {/* Status Feedback */}
+                {status === 'success' && (
+                  <p className="text-green-400 text-xs animate-pulse">Message sent successfully!</p>
+                )}
+                {status === 'error' && (
+                  <p className="text-red-400 text-xs">Failed to send message. Please try again.</p>
+                )}
               </form>
             </div>
 

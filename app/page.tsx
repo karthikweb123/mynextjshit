@@ -3,6 +3,7 @@
 import Footer from './components/Footer';
 import Hero from './components/Hero';
 import ServiceCard from './components/ServiceCard';
+import './globals.css';
 
 export default function Home() {
   const services = [
@@ -54,7 +55,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service, index) => (
               <ServiceCard 
-                key={index}
+                key={service.title}
                 title={service.title}
                 imageSrc={service.imageSrc}
                 href={service.href}
